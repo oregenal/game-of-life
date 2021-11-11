@@ -10,8 +10,8 @@
 #define BUFFER_SIZE (HEIGHT*WIDTH)
 #define FPS 5
 
-#define LIVE '#'
-#define DEAD '*'
+#define LIVE '@'
+#define DEAD '-'
 
 char stage[BUFFER_SIZE], buffer[BUFFER_SIZE];
 
@@ -36,17 +36,17 @@ void randomise_stage_callback(int row, int col)
 	putchar(stage[WIDTH*row+col]);
 }
 
-void next_stage_generator(int row, int col)
+void next_stage_generator_callback(int row, int col)
 {
 	int neighbor = 0, start_row = 0, end_row = 3,
 		start_col = 0, end_col = 3;
 	if(row == 0)
 		start_row = 1;
-	if(row == HEIGHT)
+	if(row == HEIGHT - 1)
 		end_row = 2;
 	if(col == 0)
 		start_col = 1;
-	if(col == WIDTH)
+	if(col == WIDTH - 1)
 		end_col = 2;
 	for(int i = start_row; i < end_row; ++i) {
 		for(int j = start_col; j < end_col; ++j) {
@@ -80,6 +80,7 @@ void buffer_traverse(char *stage, char *buffer,
 			printf("\n");
 	}
 }
+
 void reset_cursor(void)
 {
 	printf("\033[%dA", HEIGHT);
@@ -90,18 +91,16 @@ int main(void)
 {
 	unsigned int randseed = time(NULL);
 	srand(randseed);
-	buffer_traverse(stage, buffer, randomise_stage_callback, 1);
-	reset_cursor();
 
-	usleep(1000 * 1000 / FPS);
+	buffer_traverse(stage, buffer, randomise_stage_callback, 1);
 
 	for(;;) {
-		buffer_traverse(stage, buffer, next_stage_generator, 1);
-		buffer_traverse(stage, buffer, buffer_to_stage_callback, 0);
-
 		usleep(1000 * 1000 / FPS);
 
 		reset_cursor();
+
+		buffer_traverse(stage, buffer, next_stage_generator_callback, 1);
+		buffer_traverse(stage, buffer, buffer_to_stage_callback, 0);
 	}
 	return 0;
 }
