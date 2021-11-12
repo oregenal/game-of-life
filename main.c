@@ -30,7 +30,7 @@ void randomise_stage_callback(char *stage, char *buffer, int row, int col)
 	(void) buffer;
 	int res = rand() % 2;
 
-	if(res < 0.5) {
+	if(res < 1) {
 		stage[WIDTH*row+col] = DEAD;
 	} else {
 		stage[WIDTH*row+col] = LIVE;
