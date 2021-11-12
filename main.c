@@ -13,30 +13,35 @@
 #define LIVE '@'
 #define DEAD '-'
 
-char stage[BUFFER_SIZE], buffer[BUFFER_SIZE];
-
-void buffer_to_stage_callback(int row, int col)
+void buffer_to_stage_callback(char *stage, char *buffer, int row, int col)
 {
 	stage[WIDTH*row+col] = buffer[WIDTH*row+col];
 }
 
-void print_stage_callback(int row, int col)
+void print_stage_callback(char *stage, char *buffer, int row, int col)
 {
+	(void) buffer;
+
 	putchar(stage[WIDTH*row+col]);
 }
 
-void randomise_stage_callback(int row, int col)
+void randomise_stage_callback(char *stage, char *buffer, int row, int col)
 {
+	(void) buffer;
 	int res = rand() % 2;
+
 	if(res < 0.5) {
 		stage[WIDTH*row+col] = DEAD;
 	} else {
 		stage[WIDTH*row+col] = LIVE;
 	}
 	putchar(stage[WIDTH*row+col]);
+
+	if(col == WIDTH - 1)
+		putchar('\n');
 }
 
-void next_stage_generator_callback(int row, int col)
+void next_stage_generator_callback(char *stage, char *buffer, int row, int col)
 {
 	int neighbor = 0, start_row = 0, end_row = 3,
 		start_col = 0, end_col = 3;
@@ -63,21 +68,18 @@ void next_stage_generator_callback(int row, int col)
 		buffer[WIDTH*row+col] = DEAD;
 	}
 	putchar(buffer[WIDTH*row+col]);
+
+	if(col == WIDTH - 1)
+		putchar('\n');
 }
 
 void buffer_traverse(char *stage, char *buffer, 
-					void (*callback)(int, int), 
-					const int new_line)
+					void (*callback)(char *, char *, int, int))
 {
-	(void) stage;
-	(void) buffer;
-
 	for(int row = 0; row < HEIGHT; ++row) {
 		for(int col = 0; col < WIDTH; ++col) {
-			callback(row, col);
+			callback(stage, buffer, row, col);
 		}
-		if(new_line)
-			printf("\n");
 	}
 }
 
@@ -89,18 +91,19 @@ void reset_cursor(void)
 
 int main(void)
 {
+	char stage[BUFFER_SIZE], buffer[BUFFER_SIZE];
 	unsigned int randseed = time(NULL);
 	srand(randseed);
 
-	buffer_traverse(stage, buffer, randomise_stage_callback, 1);
+	buffer_traverse(stage, buffer, randomise_stage_callback);
 
 	for(;;) {
 		usleep(1000 * 1000 / FPS);
 
 		reset_cursor();
 
-		buffer_traverse(stage, buffer, next_stage_generator_callback, 1);
-		buffer_traverse(stage, buffer, buffer_to_stage_callback, 0);
+		buffer_traverse(stage, buffer, next_stage_generator_callback);
+		buffer_traverse(stage, buffer, buffer_to_stage_callback);
 	}
 	return 0;
 }
