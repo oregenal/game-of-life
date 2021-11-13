@@ -91,7 +91,10 @@ void reset_cursor(void)
 
 int main(void)
 {
-	char stage[BUFFER_SIZE], buffer[BUFFER_SIZE];
+	char *stage = malloc(sizeof(char) * BUFFER_SIZE);
+	char *buffer = malloc(sizeof(char) * BUFFER_SIZE);
+	char *temp;
+
 	unsigned int randseed = time(NULL);
 	srand(randseed);
 
@@ -103,7 +106,14 @@ int main(void)
 		reset_cursor();
 
 		buffer_traverse(stage, buffer, next_stage_generator_callback);
-		buffer_traverse(stage, buffer, buffer_to_stage_callback);
+
+		temp = stage;
+		stage = buffer;
+		buffer = temp;
 	}
+
+	free(stage);
+	free(buffer);
+
 	return 0;
 }
